@@ -1,0 +1,368 @@
+.record-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Mode Selector */
+.mode-selector {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.mode-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.mode-btn--active {
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.35);
+  color: #667eea;
+}
+
+/* Recording Area */
+.recording-area {
+  margin-bottom: 2.5rem;
+}
+
+.recording-stage {
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  transition: all 0.3s ease;
+}
+
+.recording-stage--active {
+  border-color: rgba(245, 87, 108, 0.3);
+  box-shadow: 0 0 60px rgba(245, 87, 108, 0.08);
+}
+
+/* Visualizer */
+.visualizer {
+  width: 100%;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.audio-visualizer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wave-container {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 100%;
+}
+
+.wave-bar {
+  width: 6px;
+  min-height: 4px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #667eea, #764ba2);
+  transition: height 0.1s ease;
+}
+
+.video-preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: rgba(255, 255, 255, 0.15);
+  font-size: 0.85rem;
+}
+
+.video-recording-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-frame {
+  width: 280px;
+  height: 180px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+
+.rec-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  background: rgba(245, 87, 108, 0.9);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  animation: recPulse 1.5s ease infinite;
+}
+
+@keyframes recPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Timer */
+.recording-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timer-display {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.2);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  transition: color 0.3s;
+}
+
+.timer-display--active {
+  color: #fff;
+}
+
+.recording-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f5576c;
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f5576c;
+  animation: pulse 1.5s ease infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.5;
+  }
+}
+
+.paused-indicator {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+/* Controls */
+.recording-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.record-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.record-btn-inner {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+}
+
+.record-btn:hover .record-btn-inner {
+  transform: scale(1.05);
+  box-shadow: 0 10px 40px rgba(102, 126, 234, 0.5);
+}
+
+.record-btn-inner--stop {
+  background: linear-gradient(135deg, #f5576c 0%, #ff6b6b 100%);
+  box-shadow: 0 8px 30px rgba(245, 87, 108, 0.4);
+}
+
+.record-btn:hover .record-btn-inner--stop {
+  box-shadow: 0 10px 40px rgba(245, 87, 108, 0.5);
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.control-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: color 0.2s;
+}
+
+.control-btn:hover {
+  color: #fff;
+}
+
+.save-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: #0a1628;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(67, 233, 123, 0.45);
+}
+
+/* Tips */
+.tips-heading {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 1rem;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.tip-card {
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tip-emoji {
+  font-size: 1.25rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.tip-card p {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Upload */
+.upload-section {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem 2rem;
+  border-radius: 16px;
+  border: 2px dashed rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.25);
+  transition: border-color 0.2s;
+}
+
+.upload-section:hover {
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.upload-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 0.25rem;
+}
+
+.upload-subtitle {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .tips-grid {
+    grid-template-columns: 1fr;
+  }
+  .upload-section {
+    flex-direction: column;
+    text-align: center;
+  }
+}
