@@ -5,6 +5,7 @@ import './StoryCard.css';
 interface StoryCardProps {
   story: Story;
   variant?: 'default' | 'compact' | 'featured';
+  onClick?: () => void;
 }
 
 const mediaIcons = {
@@ -13,11 +14,11 @@ const mediaIcons = {
   video: Video,
 };
 
-export default function StoryCard({ story, variant = 'default' }: StoryCardProps) {
+export default function StoryCard({ story, variant = 'default', onClick }: StoryCardProps) {
   const MediaIcon = mediaIcons[story.mediaType];
 
   return (
-    <article className={`story-card story-card--${variant}`}>
+    <article className={`story-card story-card--${variant}`} onClick={onClick} role={onClick ? 'button' : undefined} tabIndex={onClick ? 0 : undefined}>
       <div className="story-card-cover" style={{ background: story.coverGradient }}>
         <div className="story-card-media-badge">
           <MediaIcon size={14} />

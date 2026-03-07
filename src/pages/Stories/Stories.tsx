@@ -1,6 +1,7 @@
 import { Filter, Grid3X3, List } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import StoryCard from '../../components/StoryCard/StoryCard';
+import StoryPlayer from '../../components/StoryPlayer/StoryPlayer';
 import { getStories } from '../../services/storyService';
 import type { Story, StoryCategory } from '../../types';
 import './Stories.css';
@@ -23,6 +24,7 @@ export default function Stories() {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [playingStory, setPlayingStory] = useState<Story | null>(null);
 
   useEffect(() => {
     getStories()
@@ -88,6 +90,11 @@ export default function Stories() {
               key={story.id}
               story={story}
               variant={viewMode === 'list' ? 'compact' : 'default'}
+              onClick={
+                story.mediaType !== 'text' && story.mediaUrl
+                  ? () => setPlayingStory(story)
+                  : undefined
+              }
             />
           ))}
         </div>
@@ -97,6 +104,11 @@ export default function Stories() {
         <div className="empty-state">
           <p>No stories found in this category.</p>
         </div>
+      )}
+
+      {/* Media Player Overlay */}
+      {playingStory && (
+        <StoryPlayer story={playingStory} onClose={() => setPlayingStory(null)} />
       )}
     </div>
   );
