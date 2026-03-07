@@ -12,6 +12,8 @@ import {
   Underline,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { createStory } from '../../services/storyService';
 import type { StoryCategory } from '../../types';
 import './StoryEditor.css';
 
@@ -27,13 +29,37 @@ const categories: StoryCategory[] = [
 ];
 
 export default function StoryEditor() {
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState<StoryCategory>('fiction');
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
   const charCount = content.length;
+
+  const handleSave = async (publish: boolean) => {
+    if (!title.trim()) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await createStory({
+        title,
+        content,
+        excerpt: content.slice(0, 160),
+        category,
+        mediaType: 'text',
+        isPublished: publish,
+      });
+      navigate('/stories');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save story');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="editor-page">
@@ -73,13 +99,14 @@ export default function StoryEditor() {
           </div>
 
           <div className="editor-actions">
-            <button className="btn btn-ghost">
+            {error && <span style={{ color: '#f5576c', fontSize: '0.85rem' }}>{error}</span>}
+            <button className="btn btn-ghost" onClick={() => handleSave(false)} disabled={saving}>
               <Save size={16} />
-              Save Draft
+              {saving ? 'Saving...' : 'Save Draft'}
             </button>
-            <button className="btn btn-publish">
+            <button className="btn btn-publish" onClick={() => handleSave(true)} disabled={saving}>
               <Send size={16} />
-              Publish
+              {saving ? 'Publishing...' : 'Publish'}
             </button>
           </div>
         </div>

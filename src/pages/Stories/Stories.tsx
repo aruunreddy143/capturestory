@@ -1,8 +1,8 @@
 import { Filter, Grid3X3, List } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import StoryCard from '../../components/StoryCard/StoryCard';
-import { stories } from '../../data/mockData';
-import type { StoryCategory } from '../../types';
+import { getStories } from '../../services/storyService';
+import type { Story, StoryCategory } from '../../types';
 import './Stories.css';
 
 const categories: (StoryCategory | 'all')[] = [
@@ -20,6 +20,16 @@ const categories: (StoryCategory | 'all')[] = [
 export default function Stories() {
   const [activeCategory, setActiveCategory] = useState<StoryCategory | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [stories, setStories] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getStories()
+      .then(setStories)
+      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load stories'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered =
     activeCategory === 'all' ? stories : stories.filter((s) => s.category === activeCategory);
@@ -59,17 +69,31 @@ export default function Stories() {
       </div>
 
       {/* Stories */}
-      <div className={`stories-list stories-list--${viewMode}`}>
-        {filtered.map((story) => (
-          <StoryCard
-            key={story.id}
-            story={story}
-            variant={viewMode === 'list' ? 'compact' : 'default'}
-          />
-        ))}
-      </div>
+      {loading && (
+        <div className="empty-state">
+          <p>Loading stories...</p>
+        </div>
+      )}
 
-      {filtered.length === 0 && (
+      {error && (
+        <div className="empty-state">
+          <p>Error: {error}</p>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <div className={`stories-list stories-list--${viewMode}`}>
+          {filtered.map((story) => (
+            <StoryCard
+              key={story.id}
+              story={story}
+              variant={viewMode === 'list' ? 'compact' : 'default'}
+            />
+          ))}
+        </div>
+      )}
+
+      {!loading && !error && filtered.length === 0 && (
         <div className="empty-state">
           <p>No stories found in this category.</p>
         </div>

@@ -1,7 +1,7 @@
 import {
   type User,
   GoogleAuthProvider,
-  onAuthStateChanged,
+  onIdTokenChanged,
   signInWithPopup,
   signOut,
 } from 'firebase/auth';
@@ -14,6 +14,7 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  getToken: () => Promise<string | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,11 +36,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(mapFirebaseUser(firebaseUser));
+        const token = await firebaseUser.getIdToken();
+        sessionStorage.setItem('authToken', token);
       } else {
         setUser(null);
+        sessionStorage.removeItem('authToken');
       }
       setLoading(false);
     });
@@ -53,10 +57,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await signOut(auth);
+    sessionStorage.removeItem('authToken');
+  };
+
+  const getToken = async (): Promise<string | null> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return null;
+    const token = await currentUser.getIdToken();
+    sessionStorage.setItem('authToken', token);
+    return token;
   };
 
   const value = useMemo(
-    () => ({ user, loading, signInWithGoogle, logout }),
+    () => ({ user, loading, signInWithGoogle, logout, getToken }),
     [user, loading],
   );
 
