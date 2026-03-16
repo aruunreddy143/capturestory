@@ -1,37 +1,73 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Layout from './components/Layout/Layout';
-import ProtectedRoute from './components/ProtectedRoute';
-import { AuthProvider } from './context/AuthContext';
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
-import Portfolio from './pages/Portfolio';
-import Record from './pages/Record';
-import Stories from './pages/Stories';
-import StoryEditor from './pages/StoryEditor';
+import React from "react";
+import { StatusBar } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-function App() {
+import Layout from "./components/Layout/Layout";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Portfolio from "./pages/Portfolio";
+import Record from "./pages/Record";
+import Stories from "./pages/Stories";
+import StoryEditor from "./pages/StoryEditor";
+
+const Stack = createNativeStackNavigator();
+
+/* Wrap screens with Layout */
+const withLayout = (Component: React.ComponentType<any>) => {
+  return (props: any) => (
+    <Layout>
+      <Component {...props} />
+    </Layout>
+  );
+};
+
+function AppNavigator() {
+  const { user } = useAuth();
+
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/stories" element={<Stories />} />
-            <Route path="/editor" element={<StoryEditor />} />
-            <Route path="/record" element={<Record />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <NavigationContainer>
+      <StatusBar barStyle="dark-content" />
+
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {!user ? (
+          /* If not logged in */
+          <Stack.Screen name="Login" component={Login} />
+        ) : (
+          <>
+            <Stack.Screen
+              name="Dashboard"
+              component={withLayout(Dashboard)}
+            />
+            <Stack.Screen
+              name="Stories"
+              component={withLayout(Stories)}
+            />
+            <Stack.Screen
+              name="Editor"
+              component={withLayout(StoryEditor)}
+            />
+            <Stack.Screen
+              name="Record"
+              component={withLayout(Record)}
+            />
+            <Stack.Screen
+              name="Portfolio"
+              component={withLayout(Portfolio)}
+            />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppNavigator />
+    </AuthProvider>
+  );
+}

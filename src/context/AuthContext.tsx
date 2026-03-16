@@ -2,12 +2,26 @@ import {
   type User,
   GoogleAuthProvider,
   onIdTokenChanged,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
-} from 'firebase/auth';
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { auth } from '../config/firebase';
-import type { AuthUser } from '../types';
+  signInWithPopup, // added
+} from "firebase/auth";
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
+
+import { auth } from "../config/firebase";
+import type { AuthUser } from "../types";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -27,7 +41,7 @@ function mapFirebaseUser(firebaseUser: User): AuthUser {
     email: firebaseUser.email,
     displayName: firebaseUser.displayName,
     photoURL: firebaseUser.photoURL,
-    provider: firebaseUser.providerData[0]?.providerId ?? 'unknown',
+    provider: firebaseUser.providerData[0]?.providerId ?? "unknown",
   };
 }
 
@@ -36,41 +50,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(mapFirebaseUser(firebaseUser));
-        const token = await firebaseUser.getIdToken();
-        sessionStorage.setItem('authToken', token);
-      } else {
-        setUser(null);
-        sessionStorage.removeItem('authToken');
+    const initAuth = async () => {
+      try {
+        // Handle redirect login result
+        await getRedirectResult(auth);
+      } catch (err) {
+        console.error("Google redirect error:", err);
       }
-      setLoading(false);
-    });
 
-    return unsubscribe;
+      const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) {
+          setUser(mapFirebaseUser(firebaseUser));
+
+          const token = await firebaseUser.getIdToken();
+          await AsyncStorage.setItem("authToken", token);
+        } else {
+          setUser(null);
+          await AsyncStorage.removeItem("authToken");
+        }
+
+        setLoading(false);
+      });
+
+      return unsubscribe;
+    };
+
+    initAuth();
   }, []);
 
   const signInWithGoogle = async () => {
-    await signInWithPopup(auth, googleProvider);
+    if (Platform.OS === "web") {
+      // Open a popup on web so the flow is started synchronously from the click handler
+      await signInWithPopup(auth, googleProvider);
+    } else {
+      // keep redirect (or swap for your native/expo flow if needed)
+      await signInWithRedirect(auth, googleProvider);
+    }
   };
 
   const logout = async () => {
     await signOut(auth);
-    sessionStorage.removeItem('authToken');
+    await AsyncStorage.removeItem("authToken");
   };
 
   const getToken = async (): Promise<string | null> => {
     const currentUser = auth.currentUser;
+
     if (!currentUser) return null;
+
     const token = await currentUser.getIdToken();
-    sessionStorage.setItem('authToken', token);
+    await AsyncStorage.setItem("authToken", token);
+
     return token;
   };
 
   const value = useMemo(
-    () => ({ user, loading, signInWithGoogle, logout, getToken }),
-    [user, loading],
+    () => ({
+      user,
+      loading,
+      signInWithGoogle,
+      logout,
+      getToken,
+    }),
+    [user, loading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -78,8 +120,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
+
   return context;
 }

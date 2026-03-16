@@ -1,19 +1,35 @@
-import { Feather } from 'lucide-react';
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  ActivityIndicator,
+  Platform,
+} from 'react-native';
+import { Feather } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
-import './Login.css';
+import { styles } from './Login.styles';
 
 export default function Login() {
   const { user, signInWithGoogle } = useAuth();
+  const navigation: any = useNavigation();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
+  useEffect(() => {
+    if (user) {
+      // reset navigation to Home (web/native compatible)
+      navigation.reset?.({
+        index: 0,
+        routes: [{ name: 'Home' }],
+      });
+    }
+  }, [user, navigation]);
 
-  const handleGoogle = async () => {
+  const handleGoogle = async (e?: any) => {
+    // prevent form submit / default navigation on web
+    e?.preventDefault?.();
     setError(null);
     setLoading(true);
     try {
@@ -25,60 +41,68 @@ export default function Login() {
     }
   };
 
+  // Don't show login UI if already authenticated (navigation effect will redirect)
+  if (user) return null;
+
   return (
-    <div className="login-page">
-      <div className="login-card">
+    <View style={styles.page}>
+      <View style={styles.card}>
         {/* Brand */}
-        <div className="login-brand">
-          <div className="login-brand-icon">
+        <View style={styles.brand}>
+          <View style={styles.brandIcon}>
             <Feather size={32} />
-          </div>
-          <h1 className="login-title">CaptureStory</h1>
-          <p className="login-subtitle">Sign in to start capturing your stories</p>
-        </div>
+          </View>
+          <Text style={styles.title}>CaptureStory</Text>
+          <Text style={styles.subtitle}>Sign in to start capturing your stories</Text>
+        </View>
 
         {/* Error */}
-        {error && (
-          <div className="login-error">
-            <p>{error}</p>
-          </div>
-        )}
+        {error ? (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : null}
 
         {/* SSO Buttons */}
-        <div className="login-buttons">
-          <button
-            type="button"
-            className="sso-btn sso-btn--google"
-            onClick={handleGoogle}
+        <View style={styles.buttons}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.ssoBtn,
+              styles.googleBtn,
+              pressed && styles.btnPressed,
+              loading && styles.btnDisabled,
+            ]}
+            // ensure the rendered element is a non-submit button on web
+            {...({ type: 'button' } as any)}
+            onPress={handleGoogle}
             disabled={loading}
+            accessibilityRole="button"
           >
-            <svg className="sso-icon" viewBox="0 0 24 24">
-              <path
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
-                fill="#4285F4"
+            <View style={styles.googleIcon}>
+              <Text style={styles.googleG}>G</Text>
+            </View>
+
+            <Text style={styles.ssoText}>
+              {loading ? 'Signing in…' : 'Continue with Google'}
+            </Text>
+
+            {loading && (
+              <ActivityIndicator
+                size="small"
+                color="#fff"
+                style={styles.loadingIndicator}
               />
-              <path
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                fill="#EA4335"
-              />
-            </svg>
-            <span>Continue with Google</span>
-          </button>
-        </div>
+            )}
+          </Pressable>
+        </View>
 
         {/* Divider */}
-        <div className="login-divider">
-          <span>Secure authentication powered by Firebase</span>
-        </div>
-      </div>
-    </div>
+        <View style={styles.divider}>
+          <Text style={styles.dividerText}>
+            Secure authentication powered by Firebase
+          </Text>
+        </View>
+      </View>
+    </View>
   );
 }

@@ -1,0 +1,8 @@
+{
+  "ios": {
+    "bundleIdentifier": "com.ammulureddy.capture-story"
+  },
+  "android": {
+    "package": "com.ammulureddy.capturestory"
+  }
+}

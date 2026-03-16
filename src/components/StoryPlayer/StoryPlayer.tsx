@@ -1,9 +1,15 @@
-import { Mic, Video, X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, Pressable, Platform } from 'react-native';
+import { Video as ExpoVideo } from 'expo-av';
+import { Mic as MicIcon, Video as VideoIcon, X as XIcon } from 'lucide-react-native';
 import type { Story } from '../../types';
-import './StoryPlayer.css';
+import { styles } from './StoryPlayer.styles';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+const API_BASE =
+  (typeof process !== 'undefined' && process.env?.VITE_API_URL) ||
+  // fallback for environments that may set a global
+  (globalThis as any)?.VITE_API_URL ||
+  'http://localhost:8000';
 
 interface StoryPlayerProps {
   story: Story;
@@ -34,89 +40,100 @@ function streamUrl(story: Story): string {
   return `${API_BASE.replace(/\/api\/?$/, '')}${mediaUrl}`;
 }
 
-export default function StoryPlayer({ story, onClose }: StoryPlayerProps) {
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const src = streamUrl(story);
+/**
+ * Try to extract a simple background color from a CSS gradient or color string.
+ * React Native doesn't accept CSS gradients here, so we pick the first color.
+ */
+function extractBackgroundColor(gradientOrColor?: string) {
+  if (!gradientOrColor) return '#e6e6e6';
+  const simpleColorMatch = gradientOrColor.match(/^(#(?:[0-9a-fA-F]{3,6})|rgba?\([^)]+\))/);
+  if (simpleColorMatch) return simpleColorMatch[0];
+  const hexMatch = gradientOrColor.match(/#(?:[0-9a-fA-F]{3,6})/);
+  if (hexMatch) return hexMatch[0];
+  return '#6b6b6b';
+}
 
-  // Close on Escape
+export default function StoryPlayer({ story, onClose }: StoryPlayerProps) {
+  const overlayRef = useRef(null);
+  const src = streamUrl(story);
+  const MediaIcon = story.mediaType === 'video' ? VideoIcon : MicIcon;
+  const artBackground = extractBackgroundColor(story.coverGradient);
+
+  // Close on Escape (web)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', onKey);
+      return () => window.removeEventListener('keydown', onKey);
+    }
+    return;
   }, [onClose]);
 
-  // Close on backdrop click
-  const handleBackdrop = (e: React.MouseEvent) => {
-    if (e.target === overlayRef.current) onClose();
-  };
-
-  const MediaIcon = story.mediaType === 'video' ? Video : Mic;
-
+  // Overlay press closes; inner card Pressable consumes the press.
   return (
-    <div className="story-player-overlay" ref={overlayRef} onClick={handleBackdrop}>
-      <div className="story-player-card">
+    <Pressable style={styles.overlay} ref={overlayRef} onPress={onClose}>
+      <Pressable style={styles.card} onPress={() => { /* consume press to avoid closing */ }}>
         {/* Header */}
-        <div className="story-player-header">
-          <div className="story-player-meta">
-            <span className="story-player-badge">
-              <MediaIcon size={14} />
-              {story.mediaType}
-            </span>
-            <span className="story-player-category">{story.category}</span>
-          </div>
-          <button className="story-player-close" onClick={onClose}>
-            <X size={20} />
-          </button>
-        </div>
+        <View style={styles.header}>
+          <View style={styles.meta}>
+            <View style={styles.badge}>
+              <MediaIcon size={14} color="#fff" />
+              <Text style={styles.badgeText}>{story.mediaType}</Text>
+            </View>
+            <Text style={styles.category}>{story.category}</Text>
+          </View>
+
+          <Pressable onPress={onClose} style={styles.closeButton} accessibilityRole="button">
+            <XIcon size={20} color="#222" />
+          </Pressable>
+        </View>
 
         {/* Title */}
-        <h2 className="story-player-title">{story.title}</h2>
+        <Text style={styles.title}>{story.title}</Text>
 
         {/* Player */}
-        <div className="story-player-media">
+        <View style={styles.mediaWrap}>
           {story.mediaType === 'video' ? (
-            <video
-              src={src}
-              controls
-              autoPlay
-              className="story-player-video"
-              controlsList="nodownload"
+            <ExpoVideo
+              source={{ uri: src }}
+              useNativeControls
+              shouldPlay
+              resizeMode={'contain' as any}
+              style={styles.video}
             />
           ) : (
-            <div className="story-player-audio-wrap">
-              <div
-                className="story-player-audio-art"
-                style={{ background: story.coverGradient }}
-              >
-                <Mic size={48} />
-              </div>
-              <audio
-                src={src}
-                controls
-                autoPlay
-                className="story-player-audio"
-                controlsList="nodownload"
+            <View style={styles.audioWrap}>
+              <View style={[styles.audioArt, { backgroundColor: artBackground }]}>
+                <MicIcon size={48} color="#fff" />
+              </View>
+
+              <ExpoVideo
+                source={{ uri: src }}
+                useNativeControls
+                shouldPlay
+                isLooping={false}
+                style={styles.audioPlayer}
               />
-            </div>
+            </View>
           )}
-        </div>
+        </View>
 
         {/* Story info */}
-        {story.excerpt && <p className="story-player-excerpt">{story.excerpt}</p>}
+        {story.excerpt ? <Text style={styles.excerpt}>{story.excerpt}</Text> : null}
 
-        <div className="story-player-footer">
-          <span className="story-player-author">{story.author.name}</span>
-          <span className="story-player-date">
+        <View style={styles.footer}>
+          <Text style={styles.author}>{story.author?.name}</Text>
+          <Text style={styles.date}>
             {new Date(story.createdAt).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               year: 'numeric',
             })}
-          </span>
-        </div>
-      </div>
-    </div>
+          </Text>
+        </View>
+      </Pressable>
+    </Pressable>
   );
 }

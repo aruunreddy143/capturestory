@@ -1,18 +1,28 @@
-import { Outlet } from 'react-router-dom';
-import Header from './Header';
-import Sidebar from './Sidebar';
-import './Layout.css';
+import React, { type ReactNode } from "react";
+import { View, StyleSheet } from "react-native";
 
-export default function Layout() {
+import Header from "./Header";
+import Sidebar from "./Sidebar";
+import { styles } from "./Layout.styles";
+
+type LayoutProps = {
+  children: ReactNode;
+};
+
+export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="app-layout">
+    <View style={styles.container}>
+      {/* Sidebar */}
       <Sidebar />
-      <div className="main-content">
+
+      {/* Main content */}
+      <View style={styles.mainContent}>
         <Header />
-        <main className="page-content">
-          <Outlet />
-        </main>
-      </div>
-    </div>
+
+        <View style={styles.pageContent}>
+          {children}
+        </View>
+      </View>
+    </View>
   );
 }
