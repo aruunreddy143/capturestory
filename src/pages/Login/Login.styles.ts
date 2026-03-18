@@ -1,184 +1,202 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet, Platform } from "react-native";
 
 export const styles = StyleSheet.create({
+  /* PAGE */
 
-    /* PAGE */
+  page: {
+    flex: 1,
+    backgroundColor: "#0a0a14",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 32,
+    position: "relative",
+    overflow: "hidden",
+  },
 
-    page: {
-        flex: 1,
-        backgroundColor: "#0a0a14",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 32,
-    },
+  /* CARD */
 
-    /* CARD */
+  card: {
+    width: "100%",
+    maxWidth: 420,
+    paddingVertical: 48,
+    paddingHorizontal: 40,
+    borderRadius: 24,
 
-    card: {
-        width: "100%",
-        maxWidth: 420,
-        paddingVertical: 48,
-        paddingHorizontal: 40,
-        borderRadius: 24,
-        backgroundColor: "rgba(255,255,255,0.03)",
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(255,255,255,0.04)",
 
-        ...Platform.select({
-            ios: {
-                shadowColor: "#000",
-                shadowOpacity: 0.35,
-                shadowRadius: 20,
-                shadowOffset: { width: 0, height: 10 },
-            },
-            android: {
-                elevation: 8,
-            },
-        }),
-    },
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+   
+    ...(Platform.OS === "web"
+      ? {
+          backdropFilter: "blur(30px)", // stronger glass effect
+        }
+      : {}),
 
-    /* BRAND */
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.35,
+        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 10 },
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
 
-    brand: {
-        alignItems: "center",
-        marginBottom: 40,
-    },
+  /* BRAND */
 
-    brandIcon: {
-        width: 64,
-        height: 64,
-        borderRadius: 18,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#667eea",
-        marginBottom: 20,
+  brand: {
+    alignItems: "center",
+    marginBottom: 40,
+  },
 
-        ...Platform.select({
-            ios: {
-                shadowColor: "#667eea",
-                shadowOpacity: 0.35,
-                shadowRadius: 20,
-                shadowOffset: { width: 0, height: 8 },
-            },
-            android: {
-                elevation: 6,
-            },
-        }),
-    },
+  brandIcon: {
+    width: 64,
+    height: 64,
+    boxShadow: "0 8px 30px rgba(102, 126, 234, 0.35)",
+    borderRadius: 18,
+    overflow: "hidden",
+    marginBottom: 26,
+    justifyContent: "center",
+    alignItems: "center",
 
-    title: {
-        fontSize: 28,
-        fontWeight: "800",
-        color: "#fff",
-        marginBottom: 6,
-    },
+    ...Platform.select({
+      ios: {
+        shadowColor: "#667eea",
+        shadowOpacity: 0.35,
+        shadowRadius: 30,
+        shadowOffset: { width: 0, height: 10 },
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
 
-    subtitle: {
-        fontSize: 14,
-        color: "rgba(255,255,255,0.45)",
-        textAlign: "center",
-    },
+  brandGradient: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-    /* ERROR */
+  title: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#fff",
+    marginBottom: 16,
+    letterSpacing: -0.5,
+  },
 
-    errorBox: {
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 12,
-        backgroundColor: "rgba(245,87,108,0.1)",
-        borderWidth: 1,
-        borderColor: "rgba(245,87,108,0.25)",
-        marginBottom: 20,
-    },
+  subtitle: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.45)",
+    textAlign: "center",
+  },
 
-    errorText: {
-        color: "#f5576c",
-        fontSize: 13,
-    },
+  /* ERROR */
 
-    /* BUTTON GROUP */
+  errorBox: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: "rgba(245,87,108,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(245,87,108,0.25)",
+    marginBottom: 20,
+  },
 
-    buttons: {
-        marginBottom: 16,
-    },
+  errorText: {
+    color: "#f5576c",
+    fontSize: 13,
+    lineHeight: 18,
+  },
 
-    /* SSO BUTTON */
+  /* BUTTON GROUP */
 
-    ssoBtn: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
+  buttons: {
+    marginBottom: 16,
+  },
 
-        paddingVertical: 14,
-        paddingHorizontal: 24,
+  /* 🔥 GOOGLE BUTTON */
 
-        borderRadius: 14,
+  ssoBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
 
-        backgroundColor: "rgba(255,255,255,0.05)",
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.1)",
+    paddingVertical: 8,
+    paddingHorizontal: 24,
 
-        marginBottom: 12,
-    },
+    borderRadius: 14,
 
-    googleBtn: {
-        backgroundColor: "#4285F4",
-    },
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
 
-    btnPressed: {
-        opacity: 0.9,
-    },
+    backgroundColor: "rgba(255,255,255,0.06)",
 
-    btnDisabled: {
-        opacity: 0.6,
-    },
 
-    /* GOOGLE ICON */
+    gap: 12,
+  },
 
-    googleIcon: {
-        width: 28,
-        height: 28,
-        borderRadius: 6,
-        backgroundColor: "#fff",
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 12,
-    },
+  googleHover: {
+    borderColor: "rgba(66,133,244,0.4)",
+    shadowColor: "#4285F4",
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+  },
 
-    googleG: {
-        color: "#4285F4",
-        fontWeight: "700",
-        fontSize: 14,
-    },
+  btnPressed: {
+    transform: [{ translateY: -1 }],
+    opacity: 0.95,
+  },
 
-    ssoText: {
-        color: "#fff",
-        fontSize: 15,
-        fontWeight: "600",
-    },
+  btnDisabled: {
+    opacity: 0.5,
+  },
 
-    loadingIndicator: {
-        marginLeft: 10,
-    },
+  /* GOOGLE ICON */
 
-    /* DIVIDER */
+  googleIcon: {
+    width: 35,
+    height: 35,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-    divider: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 20,
-    },
+  ssoText: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 
-    dividerLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: "rgba(255,255,255,0.06)",
-    },
+  loadingIndicator: {
+    marginLeft: 10,
+  },
 
-    dividerText: {
-        marginHorizontal: 12,
-        fontSize: 12,
-        color: "rgba(255,255,255,0.3)",
-    },
+  /* DIVIDER */
 
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+  },
+
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+
+  dividerText: {
+    marginHorizontal: 12,
+    fontSize: 12,
+    color: "rgba(255,255,255,0.25)",
+  },
 });
