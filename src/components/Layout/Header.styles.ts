@@ -1,157 +1,146 @@
 import { StyleSheet, Platform } from "react-native";
 
 export const styles = StyleSheet.create({
-    /* HEADER */
+  header: {
+    height: 72,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 32,
+    backgroundColor: "#090a13",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.08)",
+    zIndex: 50,
+  },
 
-    header: {
-        height: 72,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingHorizontal: 20,
-        backgroundColor: "rgba(15,15,25,0.9)",
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.06)",
-        zIndex: 50,
-    },
+  left: {
+    flex: 1,
+    justifyContent: "center",
+  },
 
-    /* LEFT */
+  title: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#ffffff",
+  },
 
-    left: {
-        flex: 1,
-        justifyContent: "center",
-    },
+  center: {
+    width: 420,
+    alignItems: "center",
+  },
 
-    title: {
-        fontSize: 22,
-        fontWeight: "700",
-        color: "#fff",
-    },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    height: 42,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    backgroundColor: "#171720",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
 
-    /* CENTER */
+  searchInput: {
+    marginLeft: 8,
+    flex: 1,
+    color: "#ffffff",
+    fontSize: 14,
+    outlineStyle: "none" as any,
+  },
 
-    center: {
-        flex: 2,
-        alignItems: "center",
-    },
+  searchIcon: {
+    color: "rgba(255,255,255,0.4)",
+  },
 
-    searchBar: {
-        flexDirection: "row",
-        alignItems: "center",
-        width: "100%",
-        maxWidth: 420,
-        height: 42,
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        backgroundColor: "rgba(255,255,255,0.05)",
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.08)",
-    },
+  right: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
 
-    searchInput: {
-        marginLeft: 8,
-        flex: 1,
-        color: "#fff",
-        fontSize: 14,
-    },
+  newStoryBtn: {
+    height: 42,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    marginRight: 12,
+    backgroundColor: "#7b61d9",
 
-    searchIcon: {
-        color: "rgba(255,255,255,0.4)",
-    },
+    ...Platform.select({
+      ios: {
+        shadowColor: "#667eea",
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+      },
+      android: {
+        elevation: 4,
+      },
+      web: {
+        boxShadow: "0 4px 15px rgba(102,126,234,0.3)",
+      } as any,
+    }),
+  },
 
-    /* RIGHT */
+  newStoryText: {
+    color: "#ffffff",
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: "600",
+  },
 
-    right: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 10,
-    },
+  iconBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "#171720",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
 
-    /* NEW STORY BUTTON */
+  notificationBtn: {
+    position: "relative",
+  },
 
-    newStoryBtn: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 12,
+  notificationDot: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#f5576c",
+  },
 
-        backgroundColor: "#667eea",
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#756df0",
+    overflow: "hidden",
+  },
 
-        ...Platform.select({
-            ios: {
-                shadowColor: "#667eea",
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                shadowOffset: { width: 0, height: 4 },
-            },
-            android: {
-                elevation: 4,
-            },
-        }),
-    },
+  avatarImg: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+  },
 
-    newStoryText: {
-        color: "#fff",
-        marginLeft: 6,
-        fontSize: 14,
-        fontWeight: "600",
-    },
+  avatarText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "700",
+  },
 
-    /* ICON BUTTON */
-
-    iconBtn: {
-        width: 42,
-        height: 42,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.08)",
-        backgroundColor: "rgba(255,255,255,0.05)",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-
-    /* NOTIFICATION */
-
-    notificationBtn: {
-        position: "relative",
-    },
-
-    notificationDot: {
-        position: "absolute",
-        top: 8,
-        right: 8,
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: "#f5576c",
-    },
-
-    /* AVATAR */
-
-    avatar: {
-        width: 42,
-        height: 42,
-        borderRadius: 12,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#667eea",
-    },
-
-    avatarImg: {
-        width: 42,
-        height: 42,
-        borderRadius: 12,
-    },
-
-    avatarText: {
-        color: "#fff",
-        fontWeight: "700",
-    },
-
-    /* LOGOUT BUTTON */
-
-    logoutBtn: {
-        borderColor: "rgba(245,87,108,0.25)",
-    },
+  logoutBtn: {
+    borderColor: "rgba(255,255,255,0.1)",
+  },
 });

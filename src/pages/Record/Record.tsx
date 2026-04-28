@@ -1,38 +1,90 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
   Pressable,
   ScrollView,
-  StyleSheet,
   Platform,
   ActivityIndicator,
   Alert,
+  Linking,
 } from "react-native";
 
 import {
-  CheckCircle,
   Mic as MicIcon,
   Pause as PauseIcon,
   Play as PlayIcon,
-  Radio as RadioIcon,
   RotateCcw as RotateCcwIcon,
   Save as SaveIcon,
   Square as SquareIcon,
   Upload as UploadIcon,
   Video as VideoIcon,
-  Volume2 as VolumeIcon,
 } from "lucide-react-native";
 
 import { useNavigation } from "@react-navigation/native";
-import { Video as ExpoVideo, ResizeMode } from "expo-av";
+import { VideoView, useVideoPlayer } from "expo-video";
+import { useAudioPlayer } from "expo-audio";
 
 import { uploadMedia } from "../../services/mediaService";
 import { createStory } from "../../services/storyService";
-import { styles } from './Record.styles';
+import { styles } from "./Record.styles";
 
 type RecordingMode = "audio" | "video";
 type RecordingStatus = "idle" | "recording" | "paused" | "stopped";
+
+function NativeVideoPlayback({ uri }: { uri: string }) {
+  const player = useVideoPlayer(uri, (player) => {
+    player.loop = false;
+  });
+
+  return (
+    <VideoView
+      player={player}
+      style={styles.playbackVideo}
+      nativeControls
+      allowsPictureInPicture
+      contentFit="contain"
+    />
+  );
+}
+
+function NativeAudioPlayback({ uri }: { uri: string }) {
+  const player = useAudioPlayer(uri);
+
+  return (
+    <View style={{ padding: 16, alignItems: "center", gap: 12 }}>
+      <View style={styles.controlGroup}>
+        <Pressable
+          style={styles.controlBtn}
+          onPress={() => {
+            player.play();
+          }}
+        >
+          <PlayIcon size={20} color="#fff" />
+        </Pressable>
+
+        <Pressable
+          style={styles.controlBtn}
+          onPress={() => {
+            player.pause();
+          }}
+        >
+          <PauseIcon size={20} color="#fff" />
+        </Pressable>
+
+        <Pressable
+          style={styles.controlBtn}
+          onPress={() => {
+            player.seekTo(0);
+            player.play();
+          }}
+        >
+          <RotateCcwIcon size={20} color="#fff" />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
 export default function Record() {
   const navigation: any = useNavigation();
@@ -40,26 +92,28 @@ export default function Record() {
   const [mode, setMode] = useState<RecordingMode>("audio");
   const [status, setStatus] = useState<RecordingStatus>("idle");
   const [elapsed, setElapsed] = useState(0);
-  const [audioLevel, setAudioLevel] = useState(0);
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
 
   const timerRef = useRef<any>(null);
-  const animationRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const blobRef = useRef<Blob | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const playerRef = useRef<any>(null);
+  useEffect(() => {
+    return () => {
+      if (recordedUrl && recordedUrl.startsWith("blob:")) {
+        try {
+          URL.revokeObjectURL(recordedUrl);
+        } catch {}
+      }
+    };
+  }, [recordedUrl]);
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-      .toString()
-      .padStart(2, "0");
+    const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
     const secs = (seconds % 60).toString().padStart(2, "0");
     return `${mins}:${secs}`;
   };
@@ -84,13 +138,17 @@ export default function Record() {
       const recorder = new MediaRecorder(stream);
       chunksRef.current = [];
 
-      recorder.ondataavailable = (e: BlobEvent) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
+      recorder.ondataavailable = (e: any) => {
+        if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current);
+        const blob = new Blob(chunksRef.current, {
+          type: mode === "audio" ? "audio/webm" : "video/webm",
+        });
+
         blobRef.current = blob;
+
         const url = URL.createObjectURL(blob);
         setRecordedUrl(url);
       };
@@ -110,29 +168,38 @@ export default function Record() {
   };
 
   const pauseRecording = () => {
-    mediaRecorderRef.current?.pause();
-    setStatus("paused");
+    try {
+      mediaRecorderRef.current?.pause();
+      setStatus("paused");
+    } catch {}
   };
 
   const resumeRecording = () => {
-    mediaRecorderRef.current?.resume();
-    setStatus("recording");
+    try {
+      mediaRecorderRef.current?.resume();
+      setStatus("recording");
+    } catch {}
   };
 
   const stopRecording = () => {
-    mediaRecorderRef.current?.stop();
+    try {
+      mediaRecorderRef.current?.stop();
+    } catch {}
+
     setStatus("stopped");
 
     if (timerRef.current) clearInterval(timerRef.current);
 
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    try {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+    } catch {}
   };
 
   const resetRecording = () => {
     setStatus("idle");
     setElapsed(0);
     setRecordedUrl(null);
-    setSaved(false);
+    setSaving(false);
     setSaveError(null);
     blobRef.current = null;
   };
@@ -153,11 +220,8 @@ export default function Record() {
         mediaType: mode,
         mediaUrl: upload.url,
       });
-
-      setSaved(true);
-      setTimeout(() => navigation.navigate("Stories"), 1200);
     } catch (err: any) {
-      setSaveError(err.message);
+      setSaveError(err?.message ?? "Upload failed");
     } finally {
       setSaving(false);
     }
@@ -165,8 +229,6 @@ export default function Record() {
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
-      {/* MODE SELECTOR */}
-
       <View style={styles.modeSelector}>
         <Pressable
           style={[styles.modeBtn, mode === "audio" && styles.modeBtnActive]}
@@ -191,12 +253,8 @@ export default function Record() {
         </Pressable>
       </View>
 
-      {/* RECORDING AREA */}
-
       <View style={styles.recordingStage}>
         <Text style={styles.timerDisplay}>{formatTime(elapsed)}</Text>
-
-        {/* CONTROLS */}
 
         {status === "idle" && (
           <Pressable
@@ -259,19 +317,33 @@ export default function Record() {
         {saveError && <Text style={styles.saveError}>{saveError}</Text>}
       </View>
 
-      {/* PLAYBACK */}
+      {recordedUrl &&
+        (Platform.OS === "web" ? (
+          mode === "video" ? (
+            // @ts-ignore
+            <video controls src={recordedUrl} style={styles.playbackVideo as any} />
+          ) : (
+            // @ts-ignore
+            <audio controls src={recordedUrl} style={styles.playbackVideo as any} />
+          )
+        ) : mode === "video" ? (
+          <NativeVideoPlayback uri={recordedUrl} />
+        ) : mode === "audio" ? (
+          <NativeAudioPlayback uri={recordedUrl} />
+        ) : (
+          <View style={{ padding: 16, alignItems: "center" }}>
+            <Text style={styles.saveError}>Playback not available.</Text>
 
-      {recordedUrl && (
-        <ExpoVideo
-          ref={playerRef}
-          source={{ uri: recordedUrl }}
-          useNativeControls
-          resizeMode={ResizeMode.CONTAIN}
-          style={styles.playbackVideo}
-        />
-      )}
-
-      {/* UPLOAD */}
+            <Pressable
+              onPress={() => {
+                if (recordedUrl) Linking.openURL(recordedUrl).catch(() => {});
+              }}
+              style={styles.saveBtn}
+            >
+              <Text style={styles.saveText}>Open recording</Text>
+            </Pressable>
+          </View>
+        ))}
 
       <View style={styles.uploadSection}>
         <UploadIcon size={24} color="#fff" />

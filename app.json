@@ -1,8 +1,38 @@
 {
-  "ios": {
-    "bundleIdentifier": "com.ammulureddy.capture-story"
-  },
-  "android": {
-    "package": "com.ammulureddy.capturestory"
+  "expo": {
+    "name": "capturestory",
+    "slug": "capturestory",
+    "owner": "ammulureddy",
+    "scheme": "com.ammulureddy.capturestory",
+    "ios": {
+      "bundleIdentifier": "com.ammulureddy.capturestory"
+    },
+    "android": {
+      "package": "com.ammulureddy.capturestory",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": false,
+          "data": [
+            {
+              "scheme": "com.ammulureddy.capturestory"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "plugins": ["expo-audio", "expo-video"],
+    "extra": {
+      "eas": {
+        "projectId": "e52532d5-4d6c-4d43-baf5-677cecda6a95"
+      }
+    }
   }
 }

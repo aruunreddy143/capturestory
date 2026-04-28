@@ -12,15 +12,16 @@ import { useAuth } from '../../context/AuthContext';
 import { styles } from './Login.styles';
 import { LinearGradient } from 'expo-linear-gradient';
 
-// ✅ SVG
 import Svg, { Path } from 'react-native-svg';
 
 export default function Login() {
-  const { user, signInWithGoogle } = useAuth();
+  const { user, signInWithGoogle, requestReady } = useAuth();
   const navigation: any = useNavigation();
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const buttonDisabled = loading || !requestReady;
 
   useEffect(() => {
     if (user) {
@@ -33,6 +34,11 @@ export default function Login() {
 
   const handleGoogle = async (e?: any) => {
     if (Platform.OS === 'web') e?.preventDefault?.();
+
+    if (!requestReady) {
+      setError('Google sign-in is still preparing. Please try again.');
+      return;
+    }
 
     setError(null);
     setLoading(true);
@@ -54,9 +60,7 @@ export default function Login() {
 
   return (
     <View style={styles.page}>
-
       <View style={styles.card}>
-        {/* BRAND */}
         <View style={styles.brand}>
           <View style={styles.brandIcon}>
             <LinearGradient
@@ -75,33 +79,26 @@ export default function Login() {
           </Text>
         </View>
 
-        {/* ERROR */}
         {error ? (
           <View style={styles.errorBox}>
             <Text style={styles.errorText}>{error}</Text>
           </View>
         ) : null}
 
-        {/* GOOGLE BUTTON */}
         <View style={styles.buttons}>
           <Pressable
             style={({ pressed, hovered }: any) => [
               styles.ssoBtn,
-              hovered ? styles.googleHover : null, // ✅ safer
+              hovered ? styles.googleHover : null,
               pressed ? styles.btnPressed : null,
-              loading ? styles.btnDisabled : null,
+              buttonDisabled ? styles.btnDisabled : null,
             ]}
             {...(Platform.OS === 'web' ? { type: 'button' } : {})}
             onPress={handleGoogle}
-            disabled={loading}
+            disabled={buttonDisabled}
           >
-            {/* GOOGLE ICON */}
             <View style={styles.googleIcon}>
-              <Svg
-                width={22}   // 🔥 slightly smaller = better alignment
-                height={22}
-                viewBox="0 0 24 24"
-              >
+              <Svg width={22} height={22} viewBox="0 0 24 24">
                 <Path
                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                   fill="#4285F4"
@@ -122,7 +119,11 @@ export default function Login() {
             </View>
 
             <Text style={styles.ssoText}>
-              {loading ? 'Signing in…' : 'Continue with Google'}
+              {loading
+                ? 'Signing in...'
+                : requestReady
+                  ? 'Continue with Google'
+                  : 'Preparing Google...'}
             </Text>
 
             {loading && (
@@ -135,7 +136,6 @@ export default function Login() {
           </Pressable>
         </View>
 
-        {/* DIVIDER */}
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerText}>

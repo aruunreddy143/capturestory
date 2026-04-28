@@ -13,11 +13,6 @@ async function getAuthHeaders(): Promise<HeadersInit> {
   if (user) {
     const token = await user.getIdToken();
 
-    // Store token safely only on web
-    if (typeof window !== "undefined" && window.sessionStorage) {
-      sessionStorage.setItem("authToken", token);
-    }
-
     headers.Authorization = `Bearer ${token}`;
   }
 

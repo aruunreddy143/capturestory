@@ -65,7 +65,7 @@ export default function Dashboard() {
       {/* WELCOME SECTION */}
 
       <View style={styles.welcomeSection}>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, marginRight: 32 }}>
           <Text style={styles.welcomeTitle}>
             Welcome back, <Text style={styles.gradientText}>Arun</Text> ✨
           </Text>

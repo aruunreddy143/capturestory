@@ -1,81 +1,149 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, Pressable, Platform } from 'react-native';
-import { Video as ExpoVideo } from 'expo-av';
-import { Mic as MicIcon, Video as VideoIcon, X as XIcon } from 'lucide-react-native';
-import type { Story } from '../../types';
-import { styles } from './StoryPlayer.styles';
+import React, { useEffect, useRef } from "react";
+import { View, Text, Pressable, Platform, Linking } from "react-native";
+import {
+  Mic as MicIcon,
+  Video as VideoIcon,
+  X as XIcon,
+  Play as PlayIcon,
+  Pause as PauseIcon,
+  RotateCcw as RotateCcwIcon,
+} from "lucide-react-native";
+import { VideoView, useVideoPlayer } from "expo-video";
+import { useAudioPlayer } from "expo-audio";
+
+import type { Story } from "../../types";
+import { styles } from "./StoryPlayer.styles";
 
 const API_BASE =
-  (typeof process !== 'undefined' && process.env?.VITE_API_URL) ||
-  // fallback for environments that may set a global
+  (typeof process !== "undefined" && process.env?.VITE_API_URL) ||
   (globalThis as any)?.VITE_API_URL ||
-  'http://localhost:8000';
+  "http://localhost:8000";
 
 interface StoryPlayerProps {
   story: Story;
   onClose: () => void;
 }
 
-/**
- * Build the streamable URL for a story's media.
- *
- * `story.mediaUrl` is stored as `/uploads/audio/20260307_abc.webm`.
- * We rewrite it to hit the streaming endpoint that supports Range requests:
- *   → `{API_BASE}/media/stream/audio/20260307_abc.webm`
- */
 function streamUrl(story: Story): string {
-  const mediaUrl = story.mediaUrl ?? '';
-
-  // Already an absolute URL (e.g. https://…) — use as-is
-  if (mediaUrl.startsWith('http')) return mediaUrl;
-
-  // Expected format: /uploads/{audio|video}/{filename}
+  const mediaUrl = story.mediaUrl ?? "";
+  if (mediaUrl.startsWith("http")) return mediaUrl;
   const match = mediaUrl.match(/\/uploads\/(audio|video)\/(.+)$/);
   if (match) {
     const [, mediaType, filename] = match;
     return `${API_BASE}/media/stream/${mediaType}/${filename}`;
   }
-
-  // Fallback: serve from the static mount
-  return `${API_BASE.replace(/\/api\/?$/, '')}${mediaUrl}`;
+  return `${API_BASE.replace(/\/api\/?$/, "")}${mediaUrl}`;
 }
 
-/**
- * Try to extract a simple background color from a CSS gradient or color string.
- * React Native doesn't accept CSS gradients here, so we pick the first color.
- */
 function extractBackgroundColor(gradientOrColor?: string) {
-  if (!gradientOrColor) return '#e6e6e6';
-  const simpleColorMatch = gradientOrColor.match(/^(#(?:[0-9a-fA-F]{3,6})|rgba?\([^)]+\))/);
+  if (!gradientOrColor) return "#e6e6e6";
+  const simpleColorMatch = gradientOrColor.match(
+    /^(#(?:[0-9a-fA-F]{3,6})|rgba?\([^)]+\))/
+  );
   if (simpleColorMatch) return simpleColorMatch[0];
   const hexMatch = gradientOrColor.match(/#(?:[0-9a-fA-F]{3,6})/);
   if (hexMatch) return hexMatch[0];
-  return '#6b6b6b';
+  return "#6b6b6b";
+}
+
+function NativeVideoPlayer({ src }: { src: string }) {
+  const player = useVideoPlayer(src, (player) => {
+    player.loop = false;
+    player.play();
+  });
+
+  return (
+    <VideoView
+      player={player}
+      nativeControls
+      contentFit="contain"
+      style={styles.video}
+    />
+  );
+}
+
+function NativeAudioPlayer({ src }: { src: string }) {
+  const player = useAudioPlayer(src);
+
+  useEffect(() => {
+    player.play();
+  }, [player]);
+
+  return (
+    <View style={styles.audioPlayer}>
+      <View style={{ flexDirection: "row", gap: 12, justifyContent: "center" }}>
+        <Pressable
+          onPress={() => player.play()}
+          style={{
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            backgroundColor: "#f0f0f0",
+            borderRadius: 6,
+          }}
+        >
+          <PlayIcon size={18} color="#222" />
+        </Pressable>
+
+        <Pressable
+          onPress={() => player.pause()}
+          style={{
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            backgroundColor: "#f0f0f0",
+            borderRadius: 6,
+          }}
+        >
+          <PauseIcon size={18} color="#222" />
+        </Pressable>
+
+        <Pressable
+          onPress={() => {
+            player.seekTo(0);
+            player.play();
+          }}
+          style={{
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            backgroundColor: "#f0f0f0",
+            borderRadius: 6,
+          }}
+        >
+          <RotateCcwIcon size={18} color="#222" />
+        </Pressable>
+      </View>
+    </View>
+  );
 }
 
 export default function StoryPlayer({ story, onClose }: StoryPlayerProps) {
   const overlayRef = useRef(null);
   const src = streamUrl(story);
-  const MediaIcon = story.mediaType === 'video' ? VideoIcon : MicIcon;
+  const MediaIcon = story.mediaType === "video" ? VideoIcon : MicIcon;
   const artBackground = extractBackgroundColor(story.coverGradient);
 
-  // Close on Escape (web)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
-    if (typeof window !== 'undefined') {
-      window.addEventListener('keydown', onKey);
-      return () => window.removeEventListener('keydown', onKey);
+    if (typeof window !== "undefined") {
+      window.addEventListener("keydown", onKey);
+      return () => window.removeEventListener("keydown", onKey);
     }
     return;
   }, [onClose]);
 
-  // Overlay press closes; inner card Pressable consumes the press.
+  function openExternally() {
+    Linking.openURL(src).catch(() => {});
+  }
+
   return (
     <Pressable style={styles.overlay} ref={overlayRef} onPress={onClose}>
-      <Pressable style={styles.card} onPress={() => { /* consume press to avoid closing */ }}>
-        {/* Header */}
+      <Pressable
+        style={styles.card}
+        onPress={() => {
+          /* consume press to avoid closing */
+        }}
+      >
         <View style={styles.header}>
           <View style={styles.meta}>
             <View style={styles.badge}>
@@ -85,51 +153,50 @@ export default function StoryPlayer({ story, onClose }: StoryPlayerProps) {
             <Text style={styles.category}>{story.category}</Text>
           </View>
 
-          <Pressable onPress={onClose} style={styles.closeButton} accessibilityRole="button">
+          <Pressable
+            onPress={onClose}
+            style={styles.closeButton}
+            accessibilityRole="button"
+          >
             <XIcon size={20} color="#222" />
           </Pressable>
         </View>
 
-        {/* Title */}
         <Text style={styles.title}>{story.title}</Text>
 
-        {/* Player */}
         <View style={styles.mediaWrap}>
-          {story.mediaType === 'video' ? (
-            <ExpoVideo
-              source={{ uri: src }}
-              useNativeControls
-              shouldPlay
-              resizeMode={'contain' as any}
-              style={styles.video}
-            />
+          {story.mediaType === "video" ? (
+            Platform.OS === "web" ? (
+              // @ts-ignore - HTML5 video on web
+              <video controls src={src} style={styles.video as any} />
+            ) : (
+              <NativeVideoPlayer src={src} />
+            )
           ) : (
             <View style={styles.audioWrap}>
               <View style={[styles.audioArt, { backgroundColor: artBackground }]}>
                 <MicIcon size={48} color="#fff" />
               </View>
 
-              <ExpoVideo
-                source={{ uri: src }}
-                useNativeControls
-                shouldPlay
-                isLooping={false}
-                style={styles.audioPlayer}
-              />
+              {Platform.OS === "web" ? (
+                // @ts-ignore - HTML5 audio on web
+                <audio controls src={src} style={styles.audioPlayer as any} />
+              ) : (
+                <NativeAudioPlayer src={src} />
+              )}
             </View>
           )}
         </View>
 
-        {/* Story info */}
         {story.excerpt ? <Text style={styles.excerpt}>{story.excerpt}</Text> : null}
 
         <View style={styles.footer}>
           <Text style={styles.author}>{story.author?.name}</Text>
           <Text style={styles.date}>
-            {new Date(story.createdAt).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
+            {new Date(story.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
             })}
           </Text>
         </View>

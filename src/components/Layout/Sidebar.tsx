@@ -1,6 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, Platform } from "react-native";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { View, Text, Pressable } from "react-native";
 import {
   BookOpen,
   Feather,
@@ -21,30 +20,44 @@ const navItems = [
   { name: "Portfolio", icon: User, label: "Portfolio" },
 ];
 
-export default function Sidebar() {
-  const navigation: any = useNavigation();
-  const route: any = useRoute();
+export default function Sidebar(props: any) {
+  const navigation: any = props.navigation;
+  const state = props.state;
 
   return (
     <View style={styles.sidebar}>
       <View style={styles.brand}>
-        <Feather size={24} />
+        <View style={styles.brandIcon}>
+          <Feather size={24} color="#ffffff" />
+        </View>
+
         <Text style={styles.brandText}>CaptureStory</Text>
       </View>
 
       <View style={styles.nav}>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = route?.name === item.name;
+          const active = state?.routeNames?.[state.index] === item.name;
 
           return (
             <Pressable
               key={item.name}
               style={[styles.navItem, active && styles.activeItem]}
-              onPress={() => navigation.navigate(item.name)}
+              onPress={() => {
+                navigation.navigate(item.name);
+                navigation.closeDrawer();
+              }}
             >
-              <Icon size={20} />
-              <Text style={styles.navText}>{item.label}</Text>
+              {active && <View style={styles.activeIndicator} />}
+
+              <Icon
+                size={20}
+                color={active ? "#ffffff" : "rgba(255,255,255,0.52)"}
+              />
+
+              <Text style={[styles.navText, active && styles.activeText]}>
+                {item.label}
+              </Text>
             </Pressable>
           );
         })}
@@ -53,9 +66,14 @@ export default function Sidebar() {
       <View style={styles.footer}>
         <Pressable
           style={styles.navItem}
-          onPress={() => navigation.navigate("Settings")}
+          onPress={() => {
+            if (navigation?.navigate) {
+              navigation.navigate("Settings");
+            }
+          }}
         >
-          <Settings size={20} />
+          <Settings size={20} color="rgba(255,255,255,0.52)" />
+
           <Text style={styles.navText}>Settings</Text>
         </Pressable>
       </View>

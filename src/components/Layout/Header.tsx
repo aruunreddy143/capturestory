@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, TextInput, Image, Platform } from "react-native";
+import { View, Text, Pressable, TextInput, Image } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Bell, LogOut, Plus, Search } from "lucide-react-native";
 import { useAuth } from "../../context/AuthContext";
@@ -33,9 +33,10 @@ export default function Header() {
 
       <View style={styles.center}>
         <View style={styles.searchBar}>
-          <Search size={18} color="#666" />
+          <Search size={18} color="rgba(255,255,255,0.45)" />
           <TextInput
             placeholder="Search stories, authors..."
+            placeholderTextColor="rgba(255,255,255,0.35)"
             style={styles.searchInput}
           />
         </View>
@@ -46,16 +47,17 @@ export default function Header() {
           style={styles.newStoryBtn}
           onPress={() => navigation.navigate("Editor")}
         >
-          <Plus size={18} color="#fff" />
+          <Plus size={18} color="#ffffff" />
           <Text style={styles.newStoryText}>New Story</Text>
         </Pressable>
 
-        <Pressable style={styles.iconBtn}>
-          <Bell size={20} />
+        <Pressable style={[styles.iconBtn, styles.notificationBtn]}>
+          <Bell size={20} color="rgba(255,255,255,0.7)" />
+          <View style={styles.notificationDot} />
         </Pressable>
 
         <Pressable style={styles.iconBtn} onPress={handleLogout}>
-          <LogOut size={18} />
+          <LogOut size={18} color="rgba(255,255,255,0.7)" />
         </Pressable>
 
         <View style={styles.avatar}>
