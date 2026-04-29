@@ -1,21 +1,28 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  ScrollView,
+} from 'react-native';
 import {
   AlignCenter,
   AlignLeft,
   AlignRight,
   Bold,
   ChevronDown,
-  Image,
+  Image as ImageIcon,
   Italic,
   Link,
   Save,
   Send,
   Underline,
-} from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+} from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 import { createStory } from '../../services/storyService';
 import type { StoryCategory } from '../../types';
-import './StoryEditor.css';
+import { styles } from './StoryEditor.styles';
 
 const categories: StoryCategory[] = [
   'fiction',
@@ -29,7 +36,7 @@ const categories: StoryCategory[] = [
 ];
 
 export default function StoryEditor() {
-  const navigate = useNavigate();
+  const navigation: any = useNavigation();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState<StoryCategory>('fiction');
@@ -53,7 +60,7 @@ export default function StoryEditor() {
         mediaType: 'text',
         isPublished: publish,
       });
-      navigate('/stories');
+      navigation.navigate('Stories');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save story');
     } finally {
@@ -62,140 +69,170 @@ export default function StoryEditor() {
   };
 
   return (
-    <div className="editor-page">
-      <div className="editor-container">
-        {/* Editor Header */}
-        <div className="editor-header">
-          <div className="editor-meta">
-            <div className="category-selector">
-              <button
-                className="category-trigger"
-                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+    <ScrollView contentContainerStyle={styles.page}>
+      <View style={styles.container}>
+        {/* Main editor */}
+        <View style={styles.editorContainer}>
+          {/* Editor Header */}
+          <View style={styles.editorHeader}>
+            <View style={styles.editorMeta}>
+              <View style={styles.categorySelector}>
+                <Pressable
+                  style={styles.categoryTrigger}
+                  onPress={() => setShowCategoryDropdown((s) => !s)}
+                  accessibilityRole="button"
+                >
+                  <View style={[styles.categoryDot, { backgroundColor: '#6c5ce7' }]} />
+                  <Text style={styles.categoryText}>{category}</Text>
+                  <ChevronDown size={16} color="#444" />
+                </Pressable>
+
+                {showCategoryDropdown && (
+                  <View style={styles.categoryDropdown}>
+                    {categories.map((cat) => (
+                      <Pressable
+                        key={cat}
+                        style={[
+                          styles.categoryOption,
+                          cat === category && styles.categoryOptionActive,
+                        ]}
+                        onPress={() => {
+                          setCategory(cat);
+                          setShowCategoryDropdown(false);
+                        }}
+                        accessibilityRole="button"
+                      >
+                        <Text style={[styles.categoryOptionText, cat === category && styles.categoryOptionTextActive]}>
+                          {cat}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              <Text style={styles.editorStats}>
+                {wordCount} words · {charCount} characters
+              </Text>
+            </View>
+
+            <View style={styles.editorActions}>
+              {error && <Text style={styles.errorText}>{error}</Text>}
+
+              <Pressable
+                style={[styles.btn, styles.btnGhost]}
+                onPress={() => handleSave(false)}
+                disabled={saving}
+                accessibilityRole="button"
               >
-                <span className="category-dot" />
-                {category}
-                <ChevronDown size={14} />
-              </button>
-              {showCategoryDropdown && (
-                <div className="category-dropdown">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      className={`category-option ${cat === category ? 'category-option--active' : ''}`}
-                      onClick={() => {
-                        setCategory(cat);
-                        setShowCategoryDropdown(false);
-                      }}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <span className="editor-stats">
-              {wordCount} words · {charCount} characters
-            </span>
-          </div>
+                <Save size={16} color="#444" />
+                <Text style={styles.btnText}>{saving ? 'Saving...' : 'Save Draft'}</Text>
+              </Pressable>
 
-          <div className="editor-actions">
-            {error && <span style={{ color: '#f5576c', fontSize: '0.85rem' }}>{error}</span>}
-            <button className="btn btn-ghost" onClick={() => handleSave(false)} disabled={saving}>
-              <Save size={16} />
-              {saving ? 'Saving...' : 'Save Draft'}
-            </button>
-            <button className="btn btn-publish" onClick={() => handleSave(true)} disabled={saving}>
-              <Send size={16} />
-              {saving ? 'Publishing...' : 'Publish'}
-            </button>
-          </div>
-        </div>
+              <Pressable
+                style={[styles.btn, styles.btnPublish]}
+                onPress={() => handleSave(true)}
+                disabled={saving}
+                accessibilityRole="button"
+              >
+                <Send size={16} color="#fff" />
+                <Text style={[styles.btnText, styles.btnTextPublish]}>{saving ? 'Publishing...' : 'Publish'}</Text>
+              </Pressable>
+            </View>
+          </View>
 
-        {/* Toolbar */}
-        <div className="editor-toolbar">
-          <div className="toolbar-group">
-            <button className="toolbar-btn">
-              <Bold size={16} />
-            </button>
-            <button className="toolbar-btn">
-              <Italic size={16} />
-            </button>
-            <button className="toolbar-btn">
-              <Underline size={16} />
-            </button>
-          </div>
-          <div className="toolbar-divider" />
-          <div className="toolbar-group">
-            <button className="toolbar-btn">
-              <AlignLeft size={16} />
-            </button>
-            <button className="toolbar-btn">
-              <AlignCenter size={16} />
-            </button>
-            <button className="toolbar-btn">
-              <AlignRight size={16} />
-            </button>
-          </div>
-          <div className="toolbar-divider" />
-          <div className="toolbar-group">
-            <button className="toolbar-btn">
-              <Image size={16} />
-            </button>
-            <button className="toolbar-btn">
-              <Link size={16} />
-            </button>
-          </div>
-        </div>
+          {/* Toolbar */}
+          <View style={styles.editorToolbar}>
+            <View style={styles.toolbarGroup}>
+              <Pressable style={styles.toolbarBtn} accessibilityRole="button">
+                <Bold size={16} color="#444" />
+              </Pressable>
+              <Pressable style={styles.toolbarBtn} accessibilityRole="button">
+                <Italic size={16} color="#444" />
+              </Pressable>
+              <Pressable style={styles.toolbarBtn} accessibilityRole="button">
+                <Underline size={16} color="#444" />
+              </Pressable>
+            </View>
 
-        {/* Writing Area */}
-        <div className="writing-area">
-          <input
-            type="text"
-            className="title-input"
-            placeholder="Give your story a title..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <textarea
-            className="content-input"
-            placeholder="Start writing your story here... Let your imagination flow freely."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-        </div>
-      </div>
+            <View style={styles.toolbarDivider} />
 
-      {/* Side Panel */}
-      <div className="editor-side-panel">
-        <div className="panel-section">
-          <h4 className="panel-title">Story Cover</h4>
-          <div className="cover-preview">
-            <div className="cover-placeholder">
-              <Image size={24} />
-              <span>Add Cover Image</span>
-            </div>
-          </div>
-        </div>
+            <View style={styles.toolbarGroup}>
+              <Pressable style={styles.toolbarBtn} accessibilityRole="button">
+                <AlignLeft size={16} color="#444" />
+              </Pressable>
+              <Pressable style={styles.toolbarBtn} accessibilityRole="button">
+                <AlignCenter size={16} color="#444" />
+              </Pressable>
+              <Pressable style={styles.toolbarBtn} accessibilityRole="button">
+                <AlignRight size={16} color="#444" />
+              </Pressable>
+            </View>
 
-        <div className="panel-section">
-          <h4 className="panel-title">Writing Tips</h4>
-          <div className="tips-card">
-            <p className="tip">
-              💡 Start with a hook — the first sentence should grab the reader's attention.
-            </p>
-          </div>
-          <div className="tips-card">
-            <p className="tip">
-              🎭 Show, don't tell — let readers experience the story through actions and senses.
-            </p>
-          </div>
-          <div className="tips-card">
-            <p className="tip">
-              ✨ Read it aloud — if it sounds natural when spoken, it will read well too.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+            <View style={styles.toolbarDivider} />
+
+            <View style={styles.toolbarGroup}>
+              <Pressable style={styles.toolbarBtn} accessibilityRole="button">
+                <ImageIcon size={16} color="#444" />
+              </Pressable>
+              <Pressable style={styles.toolbarBtn} accessibilityRole="button">
+                <Link size={16} color="#444" />
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Writing Area */}
+          <View style={styles.writingArea}>
+            <TextInput
+              style={styles.titleInput}
+              placeholder="Give your story a title..."
+              value={title}
+              onChangeText={setTitle}
+              placeholderTextColor="#999"
+            />
+
+            <TextInput
+              style={styles.contentInput}
+              placeholder="Start writing your story here... Let your imagination flow freely."
+              value={content}
+              onChangeText={setContent}
+              placeholderTextColor="#999"
+              multiline
+              textAlignVertical="top"
+              scrollEnabled
+            />
+          </View>
+        </View>
+
+        {/* Side Panel */}
+        <View style={styles.sidePanel}>
+          <View style={styles.panelSection}>
+            <Text style={styles.panelTitle}>Story Cover</Text>
+            <View style={styles.coverPreview}>
+              <View style={styles.coverPlaceholder}>
+                <ImageIcon size={28} color="#666" />
+                <Text style={styles.coverText}>Add Cover Image</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.panelSection}>
+            <Text style={styles.panelTitle}>Writing Tips</Text>
+
+            <View style={styles.tipsCard}>
+              <Text style={styles.tip}>💡 Start with a hook — the first sentence should grab the reader's attention.</Text>
+            </View>
+
+            <View style={styles.tipsCard}>
+              <Text style={styles.tip}>🎭 Show, don't tell — let readers experience the story through actions and senses.</Text>
+            </View>
+
+            <View style={styles.tipsCard}>
+              <Text style={styles.tip}>✨ Read it aloud — if it sounds natural when spoken, it will read well too.</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
   );
 }

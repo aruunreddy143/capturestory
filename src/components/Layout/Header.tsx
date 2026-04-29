@@ -1,64 +1,75 @@
-import { Bell, LogOut, Plus, Search } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import './Header.css';
+import React from "react";
+import { View, Text, Pressable, TextInput, Image } from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { Bell, LogOut, Plus, Search } from "lucide-react-native";
+import { useAuth } from "../../context/AuthContext";
+import { styles } from "./Header.styles";
 
 const pageTitles: Record<string, string> = {
-  '/': 'Dashboard',
-  '/stories': 'My Stories',
-  '/editor': 'Write a Story',
-  '/record': 'Record Story',
-  '/portfolio': 'My Portfolio',
-  '/settings': 'Settings',
+  Dashboard: "Dashboard",
+  Stories: "My Stories",
+  Editor: "Write a Story",
+  Record: "Record Story",
+  Portfolio: "My Portfolio",
 };
 
 export default function Header() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigation: any = useNavigation();
+  const route: any = useRoute();
   const { user, logout } = useAuth();
-  const title = pageTitles[location.pathname] || 'CaptureStory';
+
+  const title = pageTitles[route?.name] || "CaptureStory";
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigation.navigate("Login");
   };
 
   return (
-    <header className="header">
-      <div className="header-left">
-        <h1 className="page-title">{title}</h1>
-      </div>
+    <View style={styles.header}>
+      <View style={styles.left}>
+        <Text style={styles.title}>{title}</Text>
+      </View>
 
-      <div className="header-center">
-        <div className="search-bar">
-          <Search size={18} className="search-icon" />
-          <input type="text" placeholder="Search stories, authors..." className="search-input" />
-        </div>
-      </div>
+      <View style={styles.center}>
+        <View style={styles.searchBar}>
+          <Search size={18} color="rgba(255,255,255,0.45)" />
+          <TextInput
+            placeholder="Search stories, authors..."
+            placeholderTextColor="rgba(255,255,255,0.35)"
+            style={styles.searchInput}
+          />
+        </View>
+      </View>
 
-      <div className="header-right">
-        <button type="button" className="btn-new-story" onClick={() => navigate('/editor')}>
-          <Plus size={18} />
-          <span>New Story</span>
-        </button>
+      <View style={styles.right}>
+        <Pressable
+          style={styles.newStoryBtn}
+          onPress={() => navigation.navigate("Editor")}
+        >
+          <Plus size={18} color="#ffffff" />
+          <Text style={styles.newStoryText}>New Story</Text>
+        </Pressable>
 
-        <button type="button" className="icon-btn notification-btn">
-          <Bell size={20} />
-          <span className="notification-dot" />
-        </button>
+        <Pressable style={[styles.iconBtn, styles.notificationBtn]}>
+          <Bell size={20} color="rgba(255,255,255,0.7)" />
+          <View style={styles.notificationDot} />
+        </Pressable>
 
-        <button type="button" className="icon-btn logout-btn" onClick={handleLogout} title="Sign out">
-          <LogOut size={18} />
-        </button>
+        <Pressable style={styles.iconBtn} onPress={handleLogout}>
+          <LogOut size={18} color="rgba(255,255,255,0.7)" />
+        </Pressable>
 
-        <div className="header-avatar">
+        <View style={styles.avatar}>
           {user?.photoURL ? (
-            <img src={user.photoURL} alt={user.displayName ?? 'User'} className="header-avatar-img" />
+            <Image source={{ uri: user.photoURL }} style={styles.avatarImg} />
           ) : (
-            <span>{user?.displayName?.charAt(0) ?? 'U'}</span>
+            <Text style={styles.avatarText}>
+              {user?.displayName?.charAt(0) ?? "U"}
+            </Text>
           )}
-        </div>
-      </div>
-    </header>
+        </View>
+      </View>
+    </View>
   );
 }

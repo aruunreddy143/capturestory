@@ -1,6 +1,7 @@
-import { auth } from '../config/firebase';
+import { auth } from "../config/firebase";
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+const BASE_URL =
+  process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000/api";
 
 export interface MediaUploadResult {
   message: string;
@@ -10,41 +11,46 @@ export interface MediaUploadResult {
   path: string;
   url: string;
   size: number;
-  media_type: 'audio' | 'video';
+  media_type: "audio" | "video";
 }
 
 /**
  * Upload a recorded Blob (audio or video) to the CaptureStory API.
  *
- * Uses `FormData` so the browser sets the correct `multipart/form-data`
- * Content-Type header with boundary — do NOT set Content-Type manually.
+ * Uses FormData so the browser sets the correct multipart/form-data
+ * Content-Type header automatically.
  */
 export async function uploadMedia(
   blob: Blob,
-  mediaType: 'audio' | 'video',
+  mediaType: "audio" | "video"
 ): Promise<MediaUploadResult> {
-  const ext = mediaType === 'video' ? '.webm' : '.webm';
+  const ext = mediaType === "video" ? ".webm" : ".webm";
   const filename = `recording-${Date.now()}${ext}`;
 
   const formData = new FormData();
-  formData.append('file', blob, filename);
+  formData.append("file", blob, filename);
 
   const headers: HeadersInit = {};
+
   const user = auth.currentUser;
+
   if (user) {
     const token = await user.getIdToken();
     headers.Authorization = `Bearer ${token}`;
   }
 
   const response = await fetch(`${BASE_URL}/media/${mediaType}`, {
-    method: 'POST',
+    method: "POST",
     headers,
     body: formData,
   });
 
   if (!response.ok) {
     const body = await response.json().catch(() => null);
-    const message = body?.detail ?? body?.message ?? response.statusText;
+
+    const message =
+      body?.detail ?? body?.message ?? response.statusText;
+
     throw new Error(message);
   }
 

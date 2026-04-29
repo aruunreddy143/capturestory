@@ -1,45 +1,82 @@
-import { BookOpen, Feather, LayoutDashboard, Mic, PenTool, Settings, User } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
-import './Sidebar.css';
+import React from "react";
+import { View, Text, Pressable } from "react-native";
+import {
+  BookOpen,
+  Feather,
+  LayoutDashboard,
+  Mic,
+  PenTool,
+  Settings,
+  User,
+} from "lucide-react-native";
+
+import { styles } from "./Sidebar.styles";
 
 const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/stories', icon: BookOpen, label: 'My Stories' },
-  { to: '/editor', icon: PenTool, label: 'Write' },
-  { to: '/record', icon: Mic, label: 'Record' },
-  { to: '/portfolio', icon: User, label: 'Portfolio' },
+  { name: "Dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { name: "Stories", icon: BookOpen, label: "My Stories" },
+  { name: "Editor", icon: PenTool, label: "Write" },
+  { name: "Record", icon: Mic, label: "Record" },
+  { name: "Portfolio", icon: User, label: "Portfolio" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar(props: any) {
+  const navigation: any = props.navigation;
+  const state = props.state;
+
   return (
-    <aside className="sidebar">
-      <div className="sidebar-brand">
-        <div className="brand-icon">
-          <Feather size={24} />
-        </div>
-        <span className="brand-text">CaptureStory</span>
-      </div>
+    <View style={styles.sidebar}>
+      <View style={styles.brand}>
+        <View style={styles.brandIcon}>
+          <Feather size={24} color="#ffffff" />
+        </View>
 
-      <nav className="sidebar-nav">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) => `nav-item ${isActive ? 'nav-item--active' : ''}`}
-            end={item.to === '/'}
-          >
-            <item.icon size={20} />
-            <span>{item.label}</span>
-          </NavLink>
-        ))}
-      </nav>
+        <Text style={styles.brandText}>CaptureStory</Text>
+      </View>
 
-      <div className="sidebar-footer">
-        <NavLink to="/settings" className="nav-item">
-          <Settings size={20} />
-          <span>Settings</span>
-        </NavLink>
-      </div>
-    </aside>
+      <View style={styles.nav}>
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const active = state?.routeNames?.[state.index] === item.name;
+
+          return (
+            <Pressable
+              key={item.name}
+              style={[styles.navItem, active && styles.activeItem]}
+              onPress={() => {
+                navigation.navigate(item.name);
+                navigation.closeDrawer();
+              }}
+            >
+              {active && <View style={styles.activeIndicator} />}
+
+              <Icon
+                size={20}
+                color={active ? "#ffffff" : "rgba(255,255,255,0.52)"}
+              />
+
+              <Text style={[styles.navText, active && styles.activeText]}>
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <View style={styles.footer}>
+        <Pressable
+          style={styles.navItem}
+          onPress={() => {
+            if (navigation?.navigate) {
+              navigation.navigate("Settings");
+            }
+          }}
+        >
+          <Settings size={20} color="rgba(255,255,255,0.52)" />
+
+          <Text style={styles.navText}>Settings</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }

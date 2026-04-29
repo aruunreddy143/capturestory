@@ -1,128 +1,183 @@
-import { ArrowUpRight, BookOpen, Eye, Heart, Mic, TrendingUp } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import StoryCard from '../../components/StoryCard/StoryCard';
-import { dashboardStats, featuredPortfolios, stories } from '../../data/mockData';
-import './Dashboard.css';
+import React from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+} from "react-native";
+
+import {
+  ArrowUpRight,
+  BookOpen,
+  Eye,
+  Heart,
+  Mic,
+  TrendingUp,
+} from "lucide-react-native";
+
+import { useNavigation } from "@react-navigation/native";
+
+import StoryCard from "../../components/StoryCard/StoryCard";
+import {
+  dashboardStats,
+  featuredPortfolios,
+  stories,
+} from "../../data/mockData";
+import { styles } from "./Dashboard.styles";
 
 const statCards = [
   {
-    label: 'Total Stories',
+    label: "Total Stories",
     value: dashboardStats.totalStories,
     icon: BookOpen,
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    change: '+3 this month',
+    color: "#667eea",
+    change: "+3 this month",
   },
   {
-    label: 'Total Views',
-    value: dashboardStats.totalViews.toLocaleString(),
+    label: "Total Views",
+    value: dashboardStats.totalViews,
     icon: Eye,
-    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    change: '+18% from last month',
+    color: "#4facfe",
+    change: "+18% from last month",
   },
   {
-    label: 'Total Likes',
+    label: "Total Likes",
     value: dashboardStats.totalLikes,
     icon: Heart,
-    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    change: '+24% from last month',
+    color: "#f5576c",
+    change: "+24% from last month",
   },
   {
-    label: 'Recordings',
+    label: "Recordings",
     value: dashboardStats.totalRecordings,
     icon: Mic,
-    gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-    change: '+2 this week',
+    color: "#43e97b",
+    change: "+2 this week",
   },
 ];
 
 export default function Dashboard() {
-  const navigate = useNavigate();
+  const navigation: any = useNavigation();
 
   return (
-    <div className="dashboard">
-      {/* Welcome Section */}
-      <section className="welcome-section">
-        <div className="welcome-content">
-          <h2 className="welcome-title">
-            Welcome back, <span className="gradient-text">Arun</span> ✨
-          </h2>
-          <p className="welcome-subtitle">
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+
+      {/* WELCOME SECTION */}
+
+      <View style={styles.welcomeSection}>
+        <View style={{ flex: 1, marginRight: 32 }}>
+          <Text style={styles.welcomeTitle}>
+            Welcome back, <Text style={styles.gradientText}>Arun</Text> ✨
+          </Text>
+
+          <Text style={styles.welcomeSubtitle}>
             Ready to capture your next story? Your audience is waiting.
-          </p>
-        </div>
-        <div className="welcome-actions">
-          <button className="btn btn-primary" onClick={() => navigate('/editor')}>
-            <BookOpen size={18} />
-            Write Story
-          </button>
-          <button className="btn btn-secondary" onClick={() => navigate('/record')}>
-            <Mic size={18} />
-            Record Story
-          </button>
-        </div>
-      </section>
+          </Text>
+        </View>
 
-      {/* Stats Grid */}
-      <section className="stats-grid">
-        {statCards.map((stat) => (
-          <div key={stat.label} className="stat-card">
-            <div className="stat-card-header">
-              <div className="stat-icon" style={{ background: stat.gradient }}>
-                <stat.icon size={20} />
-              </div>
-              <ArrowUpRight size={16} className="stat-trend" />
-            </div>
-            <div className="stat-value">{stat.value}</div>
-            <div className="stat-label">{stat.label}</div>
-            <div className="stat-change">
-              <TrendingUp size={12} />
-              {stat.change}
-            </div>
-          </div>
-        ))}
-      </section>
+        <View style={styles.welcomeActions}>
+          <Pressable
+            style={[styles.btn, styles.btnPrimary]}
+            onPress={() => navigation.navigate("Editor")}
+          >
+            <BookOpen size={18} color="#fff" />
+            <Text style={styles.btnText}>Write Story</Text>
+          </Pressable>
 
-      {/* Recent Stories */}
-      <section className="section">
-        <div className="section-header">
-          <h3 className="section-title">Recent Stories</h3>
-          <button className="btn-link" onClick={() => navigate('/stories')}>
-            View All
-          </button>
-        </div>
-        <div className="stories-grid">
+          <Pressable
+            style={[styles.btn, styles.btnSecondary]}
+            onPress={() => navigation.navigate("Record")}
+          >
+            <Mic size={18} color="#fff" />
+            <Text style={styles.btnText}>Record Story</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* STATS GRID */}
+
+      <View style={styles.statsGrid}>
+        {statCards.map((stat) => {
+          const Icon = stat.icon;
+
+          return (
+            <View key={stat.label} style={styles.statCard}>
+              <View style={styles.statCardHeader}>
+                <View
+                  style={[styles.statIcon, { backgroundColor: stat.color }]}
+                >
+                  <Icon size={20} color="#fff" />
+                </View>
+
+                <ArrowUpRight size={16} color="#43e97b" />
+              </View>
+
+              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
+
+              <View style={styles.statChange}>
+                <TrendingUp size={12} color="#43e97b" />
+                <Text style={styles.statChangeText}>{stat.change}</Text>
+              </View>
+            </View>
+          );
+        })}
+      </View>
+
+      {/* RECENT STORIES */}
+
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Recent Stories</Text>
+
+          <Pressable onPress={() => navigation.navigate("Stories")}>
+            <Text style={styles.link}>View All</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.storiesGrid}>
           {stories.slice(0, 3).map((story) => (
             <StoryCard key={story.id} story={story} />
           ))}
-        </div>
-      </section>
+        </View>
+      </View>
 
-      {/* Featured Storytellers */}
-      <section className="section">
-        <div className="section-header">
-          <h3 className="section-title">Featured Storytellers</h3>
-          <button className="btn-link">Discover More</button>
-        </div>
-        <div className="storytellers-grid">
-          {featuredPortfolios.map((person) => (
-            <div key={person.id} className="storyteller-card">
-              <div className="storyteller-avatar">
-                <span>{person.avatar}</span>
-              </div>
-              <div className="storyteller-info">
-                <h4 className="storyteller-name">{person.name}</h4>
-                <p className="storyteller-bio">{person.bio}</p>
-                <div className="storyteller-stats">
-                  <span>{person.storiesCount} stories</span>
-                  <span className="dot">·</span>
-                  <span>{person.followers.toLocaleString()} followers</span>
-                </div>
-              </div>
-              <button className="btn-follow">Follow</button>
-            </div>
-          ))}
-        </div>
-      </section>
-    </div>
+      {/* FEATURED STORYTELLERS */}
+
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Featured Storytellers</Text>
+          <Pressable>
+            <Text style={styles.link}>Discover More</Text>
+          </Pressable>
+        </View>
+
+        {featuredPortfolios.map((person) => (
+          <View key={person.id} style={styles.storytellerCard}>
+
+            <View style={styles.storytellerAvatar}>
+              <Text style={styles.storytellerAvatarText}>
+                {person.avatar}
+              </Text>
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.storytellerName}>{person.name}</Text>
+              <Text style={styles.storytellerBio}>{person.bio}</Text>
+
+              <Text style={styles.storytellerStats}>
+                {person.storiesCount} stories •{" "}
+                {person.followers.toLocaleString()} followers
+              </Text>
+            </View>
+
+            <Pressable style={styles.btnFollow}>
+              <Text style={styles.btnFollowText}>Follow</Text>
+            </Pressable>
+          </View>
+        ))}
+      </View>
+
+    </ScrollView>
   );
 }

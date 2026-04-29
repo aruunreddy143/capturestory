@@ -30,3 +30,6 @@ dist-ssr
 
 # NYC test coverage output
 .nyc_output
+
+
+.expo/

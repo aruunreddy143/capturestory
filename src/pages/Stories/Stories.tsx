@@ -1,10 +1,18 @@
-import { Filter, Grid3X3, List } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+  Dimensions,
+} from 'react-native';
+import { Filter, Grid3X3, List } from 'lucide-react-native';
 import StoryCard from '../../components/StoryCard/StoryCard';
 import StoryPlayer from '../../components/StoryPlayer/StoryPlayer';
 import { getStories } from '../../services/storyService';
 import type { Story, StoryCategory } from '../../types';
-import './Stories.css';
+import { styles } from './Stories.styles';
 
 const categories: (StoryCategory | 'all')[] = [
   'all',
@@ -36,80 +44,99 @@ export default function Stories() {
   const filtered =
     activeCategory === 'all' ? stories : stories.filter((s) => s.category === activeCategory);
 
+  const isGrid = viewMode === 'grid';
+  const screenWidth = Dimensions.get('window').width;
+  const gridItemWidth = Math.min(420, (screenWidth - 48) / 2); // keep a reasonable max width per card
+
   return (
-    <div className="stories-page">
+    <ScrollView contentContainerStyle={styles.container}>
       {/* Filters Bar */}
-      <div className="filters-bar">
-        <div className="filters-left">
-          <Filter size={18} className="filter-icon" />
-          <div className="category-pills">
+      <View style={styles.filtersBar}>
+        <View style={styles.filtersLeft}>
+          <Filter size={18} color="#444" />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryPillsWrap}>
             {categories.map((cat) => (
-              <button
+              <Pressable
                 key={cat}
-                className={`pill ${activeCategory === cat ? 'pill--active' : ''}`}
-                onClick={() => setActiveCategory(cat)}
+                onPress={() => setActiveCategory(cat)}
+                style={[
+                  styles.pill,
+                  activeCategory === cat && styles.pillActive,
+                ]}
+                accessibilityRole="button"
               >
-                {cat}
-              </button>
+                <Text style={[styles.pillText, activeCategory === cat && styles.pillTextActive]}>
+                  {cat}
+                </Text>
+              </Pressable>
             ))}
-          </div>
-        </div>
-        <div className="view-toggle">
-          <button
-            className={`toggle-btn ${viewMode === 'grid' ? 'toggle-btn--active' : ''}`}
-            onClick={() => setViewMode('grid')}
+          </ScrollView>
+        </View>
+
+        <View style={styles.viewToggle}>
+          <Pressable
+            onPress={() => setViewMode('grid')}
+            style={[styles.toggleBtn, isGrid && styles.toggleBtnActive]}
+            accessibilityRole="button"
           >
-            <Grid3X3 size={18} />
-          </button>
-          <button
-            className={`toggle-btn ${viewMode === 'list' ? 'toggle-btn--active' : ''}`}
-            onClick={() => setViewMode('list')}
+            <Grid3X3 size={18} color={isGrid ? '#fff' : '#666'} />
+          </Pressable>
+
+          <Pressable
+            onPress={() => setViewMode('list')}
+            style={[styles.toggleBtn, !isGrid && styles.toggleBtnActive]}
+            accessibilityRole="button"
           >
-            <List size={18} />
-          </button>
-        </div>
-      </div>
+            <List size={18} color={!isGrid ? '#fff' : '#666'} />
+          </Pressable>
+        </View>
+      </View>
 
       {/* Stories */}
       {loading && (
-        <div className="empty-state">
-          <p>Loading stories...</p>
-        </div>
+        <View style={styles.emptyState}>
+          <ActivityIndicator size="small" color="#666" />
+          <Text style={styles.emptyText}>Loading stories...</Text>
+        </View>
       )}
 
       {error && (
-        <div className="empty-state">
-          <p>Error: {error}</p>
-        </div>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>Error: {error}</Text>
+        </View>
       )}
 
-      {!loading && !error && (
-        <div className={`stories-list stories-list--${viewMode}`}>
+      {!loading && !error && filtered.length > 0 && (
+        <View style={[styles.storiesList, isGrid ? styles.storiesGrid : styles.storiesListColumn]}>
           {filtered.map((story) => (
-            <StoryCard
+            <View
               key={story.id}
-              story={story}
-              variant={viewMode === 'list' ? 'compact' : 'default'}
-              onClick={
-                story.mediaType !== 'text' && story.mediaUrl
-                  ? () => setPlayingStory(story)
-                  : undefined
-              }
-            />
+              style={isGrid ? [styles.gridItem, { width: gridItemWidth }] : undefined}
+            >
+              <StoryCard
+                story={story}
+                variant={isGrid ? 'default' : 'compact'}
+                onClick={
+                  story.mediaType !== 'text' && story.mediaUrl
+                    ? () => setPlayingStory(story)
+                    : undefined
+                }
+              />
+            </View>
           ))}
-        </div>
+        </View>
       )}
 
       {!loading && !error && filtered.length === 0 && (
-        <div className="empty-state">
-          <p>No stories found in this category.</p>
-        </div>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>No stories found in this category.</Text>
+        </View>
       )}
 
       {/* Media Player Overlay */}
       {playingStory && (
         <StoryPlayer story={playingStory} onClose={() => setPlayingStory(null)} />
       )}
-    </div>
+    </ScrollView>
   );
 }
