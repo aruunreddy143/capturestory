@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
     borderRightColor: "rgba(255,255,255,0.06)",
     display: "flex",
     flexDirection: "column",
-    paddingTop: 28,
+    paddingTop: 24,
     paddingBottom: 24,
     zIndex: 100,
   },
@@ -52,7 +52,6 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: "#667eea",
-    letterSpacing: -0.4,
 
     ...Platform.select({
       web: {
@@ -103,7 +102,12 @@ export const styles = StyleSheet.create({
     height: 24,
     borderTopRightRadius: 3,
     borderBottomRightRadius: 3,
-    backgroundColor: "#667eea",
+    backgroundColor: "#667eea", // fallback for native platforms
+    ...Platform.select({
+      web: {
+        backgroundImage: "linear-gradient(180deg, #667eea 0%, #764ba2 100%)",
+      } as any,
+    }),
   },
 
   footer: {

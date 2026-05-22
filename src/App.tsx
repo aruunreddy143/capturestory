@@ -1,7 +1,15 @@
 import "react-native-gesture-handler";
 import React from "react";
-import { StatusBar, View, ActivityIndicator, Platform, useWindowDimensions } from "react-native";
+import {
+  StatusBar,
+  View,
+  ActivityIndicator,
+  Platform,
+  useWindowDimensions,
+} from "react-native";
+
 import { NavigationContainer } from "@react-navigation/native";
+
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 
@@ -20,9 +28,26 @@ import Header from "./components/Layout/Header";
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();
 
+const linking = {
+  prefixes: ["http://localhost:8081", "/"],
+  config: {
+    screens: {
+      MainApp: {
+        screens: {
+          Dashboard: "",
+          Stories: "stories",
+          Editor: "editor",
+          Record: "record",
+          Portfolio: "portfolio",
+        },
+      },
+      Login: "login",
+    },
+  },
+};
+
 function DrawerNavigator() {
   const { width } = useWindowDimensions();
-
   const isDesktop = Platform.OS === "web" && width >= 768;
 
   return (
@@ -32,9 +57,7 @@ function DrawerNavigator() {
       screenOptions={{
         headerShown: isDesktop,
         header: () => <Header />,
-
         drawerType: isDesktop ? "permanent" : "front",
-
         drawerStyle: isDesktop
           ? {
               width: 260,
@@ -43,7 +66,6 @@ function DrawerNavigator() {
               borderRightColor: "rgba(255,255,255,0.08)",
             }
           : undefined,
-
         overlayColor: "transparent",
       }}
     >
@@ -86,9 +108,11 @@ function RootNavigator() {
 }
 
 export default function App() {
+  const isWeb = Platform.OS === "web";
+
   return (
     <AuthProvider>
-      <NavigationContainer>
+      <NavigationContainer linking={isWeb ? (linking as any) : undefined}>
         <StatusBar barStyle="light-content" />
         <RootNavigator />
       </NavigationContainer>

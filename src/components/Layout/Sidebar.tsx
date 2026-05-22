@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Platform } from "react-native";
 import {
   BookOpen,
   Feather,
@@ -37,15 +37,24 @@ export default function Sidebar(props: any) {
       <View style={styles.nav}>
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = state?.routeNames?.[state.index] === item.name;
+
+          // ✅ FIX: safer active route detection
+          const currentRoute =
+            state?.routes?.[state.index]?.name || "";
+          const active = currentRoute === item.name;
 
           return (
             <Pressable
               key={item.name}
               style={[styles.navItem, active && styles.activeItem]}
               onPress={() => {
+                // ✅ CORRECT navigation (works with linking)
                 navigation.navigate(item.name);
-                navigation.closeDrawer();
+
+                // ✅ close drawer only on mobile
+                if (Platform.OS !== "web") {
+                  navigation.closeDrawer();
+                }
               }}
             >
               {active && <View style={styles.activeIndicator} />}
@@ -73,7 +82,6 @@ export default function Sidebar(props: any) {
           }}
         >
           <Settings size={20} color="rgba(255,255,255,0.52)" />
-
           <Text style={styles.navText}>Settings</Text>
         </Pressable>
       </View>
